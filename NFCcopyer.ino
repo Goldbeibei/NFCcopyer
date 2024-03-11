@@ -1,37 +1,52 @@
+// 包含SPI和MFRC522庫
 #include <SPI.h>
 #include <MFRC522.h>
 
-#define RST_PIN         9           // Configurable, see typical pin layout above
-#define SS_PIN          10          // Configurable, see typical pin layout above
+/*----------------------
+RFID-RC522     Arduino
+------------------------
+3.3V           3.3V
+GND            GND
+RST            D9
+SDA (SS)       D10
+SCK            D13
+MOSI           D11
+MISO           D12
+IRQ            -
+----------------------*/
 
-MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
+#define RST_PIN 9           // 可配置，請參考典型引腳配置圖
+#define SS_PIN 10          // 可配置，請參考典型引腳配置圖
+
+MFRC522 mfrc522(SS_PIN, RST_PIN);  // 創建MFRC522實例
 
 void setup() {
-  Serial.begin(9600);     // Initialize serial communications with the PC
-  while (!Serial);        // Do nothing if no serial port is opened (added for Arduinos based on ATMEGA32U4)
-  SPI.begin();            // Init SPI bus
-  mfrc522.PCD_Init();     // Init MFRC522 card
-  Serial.println("Scan your RFID/NFC tag...");
+  Serial.begin(115200);     // 初始化與電腦的序列通信
+  while (!Serial);        // 如果沒有打開序列埠，則不執行任何操作（適用於基於ATMEGA32U4的Arduino）
+  SPI.begin();            // 初始化SPI總線
+  mfrc522.PCD_Init();     // 初始化MFRC522卡
+  Serial.println("將您的RFID/NFC卡靠近感應器...");
 }
 
 void loop() {
-  // Look for new cards
+  // 尋找新卡
   if (!mfrc522.PICC_IsNewCardPresent()) {
     return;
   }
 
-  // Select one of the cards
+  // 選擇其中一張卡
   if (!mfrc522.PICC_ReadCardSerial()) {
     return;
   }
 
-  // Show UID on serial monitor
-  Serial.print("Card UID:");
+  // 在序列監視器上顯示UID
+  Serial.print("卡UID：");
   dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
   Serial.println();
   mfrc522.PICC_HaltA();
 }
 
+// 將位元組陣列轉存為十六進位格式
 void dump_byte_array(byte *buffer, byte bufferSize) {
   for (byte i = 0; i < bufferSize; i++) {
     Serial.print(buffer[i] < 0x10 ? " 0" : " ");
